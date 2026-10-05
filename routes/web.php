@@ -468,7 +468,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         return redirect()->route('admin.dashboard')->with('success', 'Yeni ürün başarıyla eklendi!');
     })->name('products.store');
 
-    // ÜRÜN SİLME ROTASI (GET, POST ve DELETE İSTEKLERİNİN HEPSİNİ DESTEKLER)
     Route::match(['get', 'post', 'delete'], '/products/delete/{id}', function ($id) {
         $customProducts = session()->get('custom_products', []);
 
@@ -482,7 +481,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         return redirect()->back()->with('success', 'Ürün başarıyla silindi.');
     })->name('products.delete');
 
-    // BAZI BLADE SAYFALARINDAKİ {id} PARAMETRELİ DİĞER KULLANIM İÇİN ALTERNATİF ROTA EŞLEŞTİRMESİ
     Route::match(['get', 'post', 'delete'], '/products/{id}', function ($id) {
         $customProducts = session()->get('custom_products', []);
 
@@ -514,7 +512,6 @@ Route::get('/cart', fn() => redirect()->route('cart.index'));
 Route::get('/sepet', fn() => redirect()->route('cart.index'));
 Route::get('/favorites', fn() => redirect()->route('favorites.index'));
 
-// SİLME İŞLEMİ ÇALIŞMAZSA TIKLAYIP SIFIRLAMAK İÇİN TEMİZLEME ADRESİ
 Route::get('/admin/custom-products/clear', function () {
     session()->forget('custom_products');
     return redirect()->route('admin.dashboard')->with('success', 'Eklediğiniz tüm özel ürünler sıfırlandı!');
