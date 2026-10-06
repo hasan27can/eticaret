@@ -1,5 +1,5 @@
 <?php
-// Veritabanı Bağlantısı (Kendi veritabanı bilgilerinize göre ayarlayın)
+// Veritabanı Bağlantı Ayarları
 $host = getenv('DB_HOST') ?: 'localhost';
 $dbname = getenv('DB_NAME') ?: 'eticaret';
 $user = getenv('DB_USER') ?: 'root';
@@ -11,18 +11,15 @@ try {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]);
 
-    // 1. Foreign Key kısıtlamalarını devre dışı bırak (SQLSTATE[HY000]: 3730 HATASINI BÖYLE ÇÖZÜYORUZ)
+    // 1. Yabancı anahtar kısıtlamalarını devre dışı bırak (Hatanın kesin çözümü)
     $pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
 
-    // 2. Mevcut tabloları sil
+    // 2. Tabloları sil
     $pdo->exec("DROP TABLE IF EXISTS reviews;");
     $pdo->exec("DROP TABLE IF EXISTS products;");
     $pdo->exec("DROP TABLE IF EXISTS categories;");
 
-    // 3. Foreign Key kısıtlamalarını tekrar aç
-    $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
-
-    // 4. Tabloları Yeniden Oluştur
+    // 3. Tabloları yeniden oluştur
     $pdo->exec("
         CREATE TABLE categories (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -34,7 +31,7 @@ try {
             category_id INT,
             title VARCHAR(255) NOT NULL,
             price DECIMAL(10, 2) NOT NULL,
-            image VARCHAR(255),
+            image VARCHAR(255) DEFAULT 'placeholder.png',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -48,7 +45,7 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ");
 
-    // 5. Örnek Ürünleri Ekle
+    // 4. Örnek Verileri Ekle
     $pdo->exec("
         INSERT INTO categories (id, name) VALUES (1, 'Teknoloji');
 
@@ -59,6 +56,9 @@ try {
         ('Oyuncu Faresi', 450.00, 1),
         ('Laptop Standı', 299.90, 1);
     ");
+
+    // 5. Yabancı anahtar kısıtlamalarını tekrar aktif et
+    $pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
 
 } catch (PDOException $e) {
     die("Hata: " . $e->getMessage());
