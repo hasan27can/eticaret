@@ -6,6 +6,17 @@ use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
+| Global Helper Fonksiyonu (Eski Cache Hatalarını Engellemek İçin)
+|--------------------------------------------------------------------------
+*/
+if (!function_exists('getProductsList')) {
+    function getProductsList() {
+        return ProductHelper::getProductsList();
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
 | Mock Data / Ürün Listesi Yardımcı Sınıfı
 |--------------------------------------------------------------------------
 */
