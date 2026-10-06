@@ -6,22 +6,11 @@ use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
-| Global Helper Fonksiyonu (Eski Cache Hatalarını Engellemek İçin)
+| Mock Data / Ürün Listesi Yardımcı Fonksiyonu
 |--------------------------------------------------------------------------
 */
 if (!function_exists('getProductsList')) {
     function getProductsList() {
-        return ProductHelper::getProductsList();
-    }
-}
-
-/*
-|--------------------------------------------------------------------------
-| Mock Data / Ürün Listesi Yardımcı Sınıfı
-|--------------------------------------------------------------------------
-*/
-class ProductHelper {
-    public static function getProductsList() {
         $defaultProducts = [
             // FARELER (1-5)
             1 => ['id' => 1, 'name' => 'Logitech G Pro X Superlight Kablosuz Fare', 'price' => 3899, 'stock' => 15, 'category' => 'fare', 'badge' => 'Çok Satan', 'description' => '63 gramdan hafif, HERO 25K sensörlü ultra hafif profesyonel oyuncu faresi.', 'image' => 'https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=800&q=80'],
@@ -140,7 +129,7 @@ Route::post('/profil/guncelle', function (Request $request) {
 */
 
 Route::get('/', function (Request $request) {
-    $products = ProductHelper::getProductsList();
+    $products = getProductsList();
     $selectedCategory = $request->get('category', 'all');
     $searchQuery = $request->get('search');
     $sort = $request->get('sort');
@@ -195,7 +184,7 @@ Route::get('/products/create', function () {
 })->name('products.create');
 
 Route::get('/product/{id}', function ($id) {
-    $products = ProductHelper::getProductsList();
+    $products = getProductsList();
     $id = (int)$id;
 
     if (!isset($products[$id])) {
@@ -250,7 +239,7 @@ Route::get('/sepetim', function () {
 })->name('cart.index');
 
 Route::match(['get', 'post'], '/sepet/ekle/{id}', function (Request $request, $id) {
-    $products = ProductHelper::getProductsList();
+    $products = getProductsList();
     $id = (int)$id;
 
     if (!isset($products[$id])) return redirect()->back()->with('error', 'Ürün bulunamadı!');
@@ -381,7 +370,7 @@ Route::get('/siparislerim', function () {
 
 Route::get('/favorilerim', function () {
     $favorites = session()->get('favorites', []);
-    $favoriteProducts = array_filter(ProductHelper::getProductsList(), fn($p) => in_array($p['id'], $favorites));
+    $favoriteProducts = array_filter(getProductsList(), fn($p) => in_array($p['id'], $favorites));
     $favoriteProducts = array_map(fn($item) => (object) $item, array_values($favoriteProducts));
 
     return view('favorites.index', compact('favoriteProducts'));
@@ -414,7 +403,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::match(['get', 'post'], '/dashboard', function (Request $request) {
         if ($request->isMethod('post') && ($request->has('name') || $request->has('product_name'))) {
             $customProducts = session()->get('custom_products', []);
-            $newId = count(ProductHelper::getProductsList()) + rand(100, 999);
+            $newId = count(getProductsList()) + rand(100, 999);
 
             $customProducts[$newId] = [
                 'id'          => $newId,
@@ -431,7 +420,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             return redirect()->route('admin.dashboard')->with('success', 'Ürün başarıyla eklendi!');
         }
 
-        $totalProducts  = count(ProductHelper::getProductsList());
+        $totalProducts  = count(getProductsList());
         $totalOrders    = count(session()->get('orders', []));
         $totalReviews   = count(session()->get('reviews', []));
         $customProducts = session()->get('custom_products', []);
@@ -454,13 +443,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
     })->name('orders.update_status');
 
     Route::get('/products', function () {
-        $products = array_values(ProductHelper::getProductsList());
+        $products = array_values(getProductsList());
         return view('admin.products.index', compact('products'));
     })->name('products.index');
 
     Route::post('/products/store', function (Request $request) {
         $customProducts = session()->get('custom_products', []);
-        $newId = count(ProductHelper::getProductsList()) + rand(100, 999);
+        $newId = count(getProductsList()) + rand(100, 999);
 
         $customProducts[$newId] = [
             'id'          => $newId,
