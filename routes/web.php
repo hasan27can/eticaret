@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Artisan;
 
 /*
 |--------------------------------------------------------------------------
@@ -500,7 +501,7 @@ Route::get('/cart', fn() => redirect()->route('cart.index'));
 Route::get('/sepet', fn() => redirect()->route('cart.index'));
 Route::get('/favorites', fn() => redirect()->route('favorites.index'));
 
-// Ekran görüntüsündeki "orders.index not defined" hatasını çözen eksik takma adlar (Alias):
+// Eksik takma adlar (Alias):
 Route::get('/orders', fn() => redirect()->route('admin.orders.index'))->name('orders.index');
 Route::get('/orders/user', fn() => redirect()->route('user.orders'))->name('orders.user');
 
@@ -508,3 +509,12 @@ Route::post('/admin/custom-products/clear', function () {
     session()->forget('custom_products');
     return redirect()->route('admin.dashboard')->with('success', 'Eklediğiniz tüm özel ürünler sıfırlandı!');
 })->name('custom_products.clear');
+
+// Önbellek (Cache) Temizleme Rotası
+Route::get('/clear-cache', function () {
+    Artisan::call('route:clear');
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('view:clear');
+    return 'Tüm önbellekler (route, config, cache, view) başarıyla temizlendi!';
+});
