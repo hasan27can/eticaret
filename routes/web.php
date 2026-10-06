@@ -94,7 +94,7 @@ Route::post('/register', function (Request $request) {
     return redirect()->route('products.index')->with('success', 'Kayıt başarılı!');
 })->name('register.post');
 
-Route::any('/logout', function (Request $request) {
+Route::post('/logout', function (Request $request) {
     Auth::logout();
     $request->session()->invalidate();
     $request->session()->regenerateToken();
@@ -238,7 +238,7 @@ Route::get('/sepetim', function () {
     return view('cart.index', compact('cart', 'subTotal', 'discount', 'totalPrice'));
 })->name('cart.index');
 
-Route::match(['get', 'post'], '/sepet/ekle/{id}', function (Request $request, $id) {
+Route::post('/sepet/ekle/{id}', function (Request $request, $id) {
     $products = getProductsList();
     $id = (int)$id;
 
@@ -287,7 +287,7 @@ Route::post('/kupon-uygula', function (Request $request) {
     return redirect()->back()->with('error', 'Geçersiz kupon kodu!');
 })->name('coupon.apply');
 
-Route::match(['get', 'post'], '/sepet/azalt/{id}', function ($id) {
+Route::post('/sepet/azalt/{id}', function ($id) {
     $cart = session()->get('cart', []);
     if (isset($cart[$id])) {
         if ($cart[$id]['quantity'] > 1) {
@@ -300,7 +300,7 @@ Route::match(['get', 'post'], '/sepet/azalt/{id}', function ($id) {
     return redirect()->back()->with('success', 'Ürün adeti güncellendi!');
 })->name('cart.decrement');
 
-Route::match(['get', 'post'], '/sepet/arttir/{id}', function ($id) {
+Route::post('/sepet/arttir/{id}', function ($id) {
     $cart = session()->get('cart', []);
     if (isset($cart[$id])) {
         $cart[$id]['quantity']++;
@@ -376,7 +376,7 @@ Route::get('/favorilerim', function () {
     return view('favorites.index', compact('favoriteProducts'));
 })->name('favorites.index');
 
-Route::match(['get', 'post'], '/favori/toggle/{id}', function ($id) {
+Route::post('/favori/toggle/{id}', function ($id) {
     $id = (int)$id;
     $favorites = session()->get('favorites', []);
 
@@ -400,8 +400,17 @@ Route::match(['get', 'post'], '/favori/toggle/{id}', function ($id) {
 
 Route::prefix('admin')->name('admin.')->group(function () {
     
-    Route::match(['get', 'post'], '/dashboard', function (Request $request) {
-        if ($request->isMethod('post') && ($request->has('name') || $request->has('product_name'))) {
+    Route::get('/dashboard', function () {
+        $totalProducts  = count(getProductsList());
+        $totalOrders    = count(session()->get('orders', []));
+        $totalReviews   = count(session()->get('reviews', []));
+        $customProducts = session()->get('custom_products', []);
+        
+        return view('admin_dashboard', compact('totalProducts', 'totalOrders', 'totalReviews', 'customProducts'));
+    })->name('dashboard');
+
+    Route::post('/dashboard', function (Request $request) {
+        if ($request->has('name') || $request->has('product_name')) {
             $customProducts = session()->get('custom_products', []);
             $newId = count(getProductsList()) + rand(100, 999);
 
@@ -419,14 +428,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             session()->put('custom_products', $customProducts);
             return redirect()->route('admin.dashboard')->with('success', 'Ürün başarıyla eklendi!');
         }
-
-        $totalProducts  = count(getProductsList());
-        $totalOrders    = count(session()->get('orders', []));
-        $totalReviews   = count(session()->get('reviews', []));
-        $customProducts = session()->get('custom_products', []);
-        
-        return view('admin_dashboard', compact('totalProducts', 'totalOrders', 'totalReviews', 'customProducts'));
-    })->name('dashboard');
+        return redirect()->back();
+    });
 
     Route::get('/orders', function () {
         $orders = session()->get('orders', []);
@@ -466,7 +469,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         return redirect()->route('admin.dashboard')->with('success', 'Yeni ürün başarıyla eklendi!');
     })->name('products.store');
 
-    Route::match(['get', 'post', 'delete'], '/products/delete/{id}', function ($id) {
+    Route::delete('/products/{id}', function ($id) {
         $customProducts = session()->get('custom_products', []);
 
         foreach ($customProducts as $key => $product) {
@@ -478,19 +481,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         session()->put('custom_products', $customProducts);
         return redirect()->back()->with('success', 'Ürün başarıyla silindi.');
     })->name('products.delete');
-
-    Route::match(['get', 'post', 'delete'], '/products/{id}', function ($id) {
-        $customProducts = session()->get('custom_products', []);
-
-        foreach ($customProducts as $key => $product) {
-            if ((string)$key === (string)$id || (string)($product['id'] ?? '') === (string)$id) {
-                unset($customProducts[$key]);
-            }
-        }
-
-        session()->put('custom_products', $customProducts);
-        return redirect()->back()->with('success', 'Ürün başarıyla silindi.');
-    });
 
     Route::get('/reviews', function () {
         $reviews = session()->get('reviews', []);
@@ -510,7 +500,11 @@ Route::get('/cart', fn() => redirect()->route('cart.index'));
 Route::get('/sepet', fn() => redirect()->route('cart.index'));
 Route::get('/favorites', fn() => redirect()->route('favorites.index'));
 
-Route::get('/admin/custom-products/clear', function () {
+// Ekran görüntüsündeki "orders.index not defined" hatasını çözen eksik takma adlar (Alias):
+Route::get('/orders', fn() => redirect()->route('admin.orders.index'))->name('orders.index');
+Route::get('/orders/user', fn() => redirect()->route('user.orders'))->name('orders.user');
+
+Route::post('/admin/custom-products/clear', function () {
     session()->forget('custom_products');
     return redirect()->route('admin.dashboard')->with('success', 'Eklediğiniz tüm özel ürünler sıfırlandı!');
 })->name('custom_products.clear');

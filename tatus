@@ -1,0 +1,17 @@
+[33mcommit 5261a03ee4fc9f9f7fc2221b6bf9535feb3acd3a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: Hasan Aslan <hasan27can2005@gmail.com>
+Date:   Tue Oct 6 11:52:19 2026 +0300
+
+    build klasoru eklendi
+
+[33mcommit e7fe23bd00a56152ad4a8459f9e96f9b95438cd4[m
+Author: Hasan Aslan <hasan27can2005@gmail.com>
+Date:   Tue Oct 6 11:38:17 2026 +0300
+
+    ProductHelper sınıfı tamamen kaldırıldı
+
+[33mcommit 610c1a78c5cb547cf574024a149fe8f577e6d127[m
+Author: Hasan Aslan <hasan27can2005@gmail.com>
+Date:   Tue Oct 6 10:23:05 2026 +0300
+
+    Fix global helper issue in routes/web.php
